@@ -27,6 +27,8 @@
    }
    ```
 
+6. Test the route handler
+
 ## My design
 
 1. Using express to handle the request
