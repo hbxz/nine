@@ -13,7 +13,7 @@ app.get('/', (req, res, next) => {
     ret = payload
       .filter((item) => item['episodeCount'] > 0 && item.drm)
       .map((item) => ({
-        image: item.image.showImage,
+        image: _.isEmpty(item.image) ? undefined : item.image.showImage,
         slug: item.slug,
         title: item.title,
       }));
