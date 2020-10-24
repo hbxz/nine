@@ -1,13 +1,26 @@
+const { response } = require('express');
 const express = require('express');
 const app = express();
-const port = 3001;
+const PORT = 3001;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.get('/', (req, res, next) => {
-  ret = {};
-  res.json(ret);
+  try {
+    const { payload } = req.body;
+
+    ret = payload
+      .filter((item) => item['episodeCount'] > 0 && item.drm)
+      .map((item) => ({
+        image: item.image.showImage,
+        slug: item.slug,
+        title: item.title,
+      }));
+    res.json({ response: ret });
+  } catch (error) {
+    next(error);
+  }
 });
 
 // catch 404 and forward to error handler
@@ -23,6 +36,6 @@ app.use(function (err, req, res, next) {
   res.json({ error: `${message}` });
 });
 
-app.listen(port, () => {
-  console.log(`App listening at http://localhost:${port}`);
+app.listen(PORT, () => {
+  console.log(`App listening at http://localhost:${PORT}`);
 });
