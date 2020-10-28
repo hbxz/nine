@@ -82,3 +82,29 @@ describe('2. On recieving request with invalid JSON ', () => {
       .end(done);
   });
 });
+
+describe('3. On recieving request with sample JSON', () => {
+  var request;
+  var sampleRequest;
+  var expectedBody;
+
+  beforeEach(async () => {
+    sampleRequest = await readFile('sample_request.json', 'utf8');
+    var sampleResponse = await readFile('sample_response.json', 'utf8');
+    expectedBody = JSON.parse(sampleResponse);
+
+    request = supertest(app)
+      .get('/')
+      .set('Accept', 'application/json')
+      .type('json')
+      .send(sampleRequest);
+  });
+
+  it('returns a JSON response, with HTTP status 200', (done) => {
+    request.expect('Content-Type', /json/).expect(200, done);
+  });
+
+  it(`returns a JSON response with exactly same data as the sample response`, (done) => {
+    request.expect(expectedBody).end(done);
+  });
+});
