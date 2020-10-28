@@ -1,4 +1,4 @@
-const { response } = require('express');
+const _ = require('lodash');
 const express = require('express');
 const app = express();
 const PORT = 3001;
@@ -8,7 +8,14 @@ app.use(express.urlencoded({ extended: false }));
 
 app.get('/', (req, res, next) => {
   try {
+    var ret = {};
     const { payload } = req.body;
+
+    if (_.isEmpty(payload) || !_.isArray(payload))
+      return res.status(400).json({
+        response: ret,
+        message: 'Expect request.body["payload"] to be an array.',
+      });
 
     ret = payload
       .filter((item) => item['episodeCount'] > 0 && item.drm)
@@ -17,7 +24,7 @@ app.get('/', (req, res, next) => {
         slug: item.slug,
         title: item.title,
       }));
-    res.json({ response: ret });
+    return res.json({ response: ret });
   } catch (error) {
     next(error);
   }
@@ -39,3 +46,5 @@ app.use(function (err, req, res, next) {
 app.listen(PORT, () => {
   console.log(`App listening at http://localhost:${PORT}`);
 });
+
+module.exports = app;
