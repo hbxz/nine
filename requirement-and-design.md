@@ -34,3 +34,4 @@
 1. Using express to handle the request
 2. Unit test
 3. Deploy - Try to deploy the code to Lambda. If too much trouble, deploy to my EC2 and update my Domain.
+   > [Ref - Going Serverless: Migrating an Express Application to Amazon API Gateway and AWS Lambda](https://aws.amazon.com/blogs/compute/going-serverless-migrating-an-express-application-to-amazon-api-gateway-and-aws-lambda/)
