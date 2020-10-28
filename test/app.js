@@ -1,6 +1,6 @@
 const { describe } = require('mocha');
 const supertest = require('supertest');
-var app = require('../app');
+var { app } = require('../app');
 
 const _ = require('lodash');
 const fs = require('fs');
