@@ -3,6 +3,9 @@ const supertest = require('supertest');
 var app = require('../app');
 
 const _ = require('lodash');
+const fs = require('fs');
+const { promisify } = require('util');
+const readFile = promisify(fs.readFile);
 
 describe('1. On receiving request with empty body', () => {
   var request;
@@ -10,6 +13,7 @@ describe('1. On receiving request with empty body', () => {
     request = supertest(app)
       .get('/')
       .set('Accept', 'application/json')
+      .type('json')
       .send({});
   });
 
@@ -42,6 +46,38 @@ describe('1. On receiving request with empty body', () => {
         if (!(kMsg in res.body)) throw new Error(`missing ${kMsg} key`);
         if (!(res.body[kMsg] === vMsg))
           throw new Error(`res.body[${kMsg}] is expected to be "${vMsg}"`);
+      })
+      .end(done);
+  });
+});
+
+describe('2. On recieving request with invalid JSON ', () => {
+  var request;
+  var brokenRequest;
+  beforeEach(async () => {
+    brokenRequest = await readFile('broken_request.json', 'utf8');
+    request = supertest(app)
+      .get('/')
+      .set('Accept', 'application/json')
+      .type('json')
+      .send(brokenRequest);
+  });
+
+  it('returns a json response, with HTTP status 400 Bad Request', (done) => {
+    request.expect('Content-Type', /json/).expect(400, done);
+  });
+
+  var expectedErrorString = 'Could not decode request';
+  it(`returns a json response with a error key containing the string "${expectedErrorString}"`, (done) => {
+    request
+      .expect((res) => {
+        if (!('error' in res.body)) throw new Error('missing error key');
+        if (!(typeof res.body.error === 'string'))
+          throw new Error('res.body.error is not string');
+        if (!res.body.error.includes(expectedErrorString))
+          throw new Error(
+            `res.body.error doesn't contain the string "${expectedErrorString}"`
+          );
       })
       .end(done);
   });
