@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "nodemon app.js",
-    "test": "mocha"
+    "test": "mocha",
+    "build": "git bundle create build.nine.bundle --all"
   },
   "prettier": {
     "semi": true,
