@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const _ = require('lodash');
 const express = require('express');
 const app = express();
