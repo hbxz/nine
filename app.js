@@ -52,7 +52,6 @@ app.use(async function (err, req, res, next) {
 
   msgJsonParsing = 'Could not decode request: JSON parsing failed';
   message = err.type == 'entity.parse.failed' ? msgJsonParsing : err.message;
-  res.json({ error: `${message}` });
 
   const d = new Date();
   var datestring =
@@ -67,8 +66,10 @@ app.use(async function (err, req, res, next) {
     d.getMinutes();
   await writeFile(
     `./log-${datestring}.json`,
-    JSON.stringify({ err: err }).replace(/\\n/g, '')
+    JSON.stringify(err).replace(/\\n/g, '')
   );
+
+  return res.json({ error: `${message}` });
 });
 
 app.listen(PORT, () => {
