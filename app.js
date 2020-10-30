@@ -13,7 +13,7 @@ const writeFile = promisify(fs.writeFile);
 app.use(express.json({ strict: false }));
 app.use(express.urlencoded({ extended: false }));
 
-app.get('/', (req, res, next) => {
+const nineHandler = (req, res, next) => {
   try {
     var ret = {};
     const { payload } = req.body;
@@ -35,17 +35,10 @@ app.get('/', (req, res, next) => {
   } catch (error) {
     next(error);
   }
-});
-
-// catch 404 and forward to error handler
-app.use(function (req, res, next) {
-  var err = new Error(`route ${req.url} is not supported`);
-  err.status = 404;
-  next(err);
-});
+};
 
 // error handler
-app.use(async function (err, req, res, next) {
+const errorHandler = async function (err, req, res, next) {
   res.status(err.status || 500);
   console.log('============== Error ===============');
   console.log(err.message);
@@ -70,7 +63,18 @@ app.use(async function (err, req, res, next) {
   );
 
   return res.json({ error: `${message}` });
+};
+
+app.get('', nineHandler);
+app.get('/', nineHandler);
+
+// catch 404 and forward to error handler
+app.use(function (req, res, next) {
+  var err = new Error(`route ${req.url} is not supported`);
+  err.status = 404;
+  next(err);
 });
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`App listening at http://localhost:${PORT}`);
