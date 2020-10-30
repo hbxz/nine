@@ -11,7 +11,7 @@ describe('1. On receiving request with empty body', () => {
   var request;
   beforeEach(function () {
     request = supertest(app)
-      .get('/')
+      .post('/')
       .set('Accept', 'application/json')
       .type('json')
       .send({});
@@ -57,7 +57,7 @@ describe('2. On recieving request with invalid JSON ', () => {
   beforeEach(async () => {
     brokenRequest = await readFile('broken_request.json', 'utf8');
     request = supertest(app)
-      .get('/')
+      .post('/')
       .set('Accept', 'application/json')
       .type('json')
       .send(brokenRequest);
@@ -94,7 +94,7 @@ describe('3. On recieving request with sample JSON', () => {
     expectedBody = JSON.parse(sampleResponse);
 
     request = supertest(app)
-      .get('/')
+      .post('/')
       .set('Accept', 'application/json')
       .type('json')
       .send(sampleRequest);
@@ -116,7 +116,7 @@ describe('4. On recieving valid JSON', () => {
   beforeEach(async () => {
     sampleRequest = '"aaaaa"';
     request = supertest(app)
-      .get('/')
+      .post('/')
       .set('Accept', 'application/json')
       .type('json')
       .send(sampleRequest);

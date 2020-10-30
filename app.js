@@ -86,7 +86,7 @@ const notFoundHandler = async function (req, res, next) {
 // use bodyParser.text rather than bodyParser.json, for the sake of controling on req.body
 app.use(bodyParser.text({ type: '*/*' }));
 
-app.get('/', nineHanlder);
+app.post('/', nineHanlder);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
