@@ -1,8 +1,14 @@
 #!/usr/bin/env node
 const _ = require('lodash');
+
 const express = require('express');
 const app = express();
 const PORT = 3001;
+
+// error logging
+const fs = require('fs');
+const { promisify, format } = require('util');
+const writeFile = promisify(fs.writeFile);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -33,15 +39,36 @@ app.get('/', (req, res, next) => {
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
-  next(createError(404));
+  var err = new Error(`route ${req.url} is not supported`);
+  err.status = 404;
+  next();
 });
 
 // error handler
-app.use(function (err, req, res, next) {
+app.use(async function (err, req, res, next) {
   res.status(err.status || 500);
+  console.log('============== Error ===============');
+  console.log(err.message);
+
   msgJsonParsing = 'Could not decode request: JSON parsing failed';
   message = err.type == 'entity.parse.failed' ? msgJsonParsing : err.message;
   res.json({ error: `${message}` });
+
+  const d = new Date();
+  var datestring =
+    d.getDate() +
+    '-' +
+    (d.getMonth() + 1) +
+    '-' +
+    d.getFullYear() +
+    ' ' +
+    d.getHours() +
+    ':' +
+    d.getMinutes();
+  await writeFile(
+    `./log-${datestring}.json`,
+    JSON.stringify({ err: err }).replace(/\\n/g, '')
+  );
 });
 
 app.listen(PORT, () => {
