@@ -10,7 +10,7 @@ const fs = require('fs');
 const { promisify, format } = require('util');
 const writeFile = promisify(fs.writeFile);
 
-app.use(express.json());
+app.use(express.json({ strict: false }));
 app.use(express.urlencoded({ extended: false }));
 
 app.get('/', (req, res, next) => {
@@ -41,7 +41,7 @@ app.get('/', (req, res, next) => {
 app.use(function (req, res, next) {
   var err = new Error(`route ${req.url} is not supported`);
   err.status = 404;
-  next();
+  next(err);
 });
 
 // error handler
