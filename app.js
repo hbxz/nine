@@ -2,6 +2,8 @@
 const _ = require('lodash');
 
 const express = require('express');
+const bodyParser = require('body-parser');
+
 const app = express();
 const PORT = 3001;
 
@@ -10,70 +12,82 @@ const fs = require('fs');
 const { promisify, format } = require('util');
 const writeFile = promisify(fs.writeFile);
 
-app.use(express.json({ strict: false }));
-app.use(express.urlencoded({ extended: false }));
+const MSG_JSON_PARSING = 'Could not decode request: JSON parsing failed';
 
-const nineHandler = (req, res, next) => {
-  try {
-    var ret = {};
-    const { payload } = req.body;
-
-    if (_.isEmpty(payload) || !_.isArray(payload))
-      return res.status(200).json({
-        response: ret,
-        message: 'Expect request.body["payload"] to be an array.',
-      });
-
-    ret = payload
-      .filter((item) => item['episodeCount'] > 0 && item.drm)
-      .map((item) => ({
-        image: _.isEmpty(item.image) ? undefined : item.image.showImage,
-        slug: item.slug,
-        title: item.title,
-      }));
-    return res.json({ response: ret });
-  } catch (error) {
-    next(error);
-  }
-};
-
-// error handler
-const errorHandler = async function (err, req, res, next) {
-  res.status(err.status || 500);
-  console.log('============== Error ===============');
-  console.log(err.message);
-
-  msgJsonParsing = 'Could not decode request: JSON parsing failed';
-  message = err.type == 'entity.parse.failed' ? msgJsonParsing : err.message;
-
+const getDateString = () => {
   const d = new Date();
-  var datestring =
+  return (
     d.getDate() +
     '-' +
-    (d.getMonth() + 1) +
-    '-' +
-    d.getFullYear() +
-    ' ' +
     d.getHours() +
     ':' +
-    d.getMinutes();
-  await writeFile(
-    `./log-${datestring}.json`,
-    JSON.stringify(err).replace(/\\n/g, '')
+    d.getMinutes() +
+    ':' +
+    d.getSeconds() +
+    ':' +
+    d.getMilliseconds()
   );
-
-  return res.json({ error: `${message}` });
 };
 
-app.get('', nineHandler);
-app.get('/', nineHandler);
+const nineHanlder = async (req, res, next) => {
+  var ret = {};
+  var payload = [];
 
-// catch 404 and forward to error handler
-app.use(function (req, res, next) {
+  await writeFile(
+    `./log/log-in-${getDateString()}.json`,
+    JSON.stringify({ body: req.body }).replace(/\\n/g, '')
+  );
+
+  // JSON parse
+  try {
+    payload = JSON.parse(req.body).payload;
+  } catch (err) {
+    err.status = 400;
+    err.message = MSG_JSON_PARSING;
+    return next(err);
+  }
+
+  // corner case: payload empty or is not array
+  if (_.isEmpty(payload) || !_.isArray(payload))
+    return res.status(200).json({
+      response: ret,
+      message: 'Expect request.body["payload"] to be an array.',
+    });
+
+  // map to result
+  ret = payload
+    .filter((item) => item['episodeCount'] > 0 && item.drm)
+    .map((item) => ({
+      image: _.isEmpty(item.image) ? undefined : item.image.showImage,
+      slug: item.slug,
+      title: item.title,
+    }));
+  return res.json({ response: ret });
+};
+
+const errorHandler = async function (err, req, res, next) {
+  if (err.type !== 'entity.parse.failed' && err.status == undefined)
+    err.status = 500;
+
+  await writeFile(
+    `./log/log-${err.status}-${getDateString()}.json`,
+    JSON.stringify({ error: err, body: req.body }).replace(/\\n/g, '')
+  );
+
+  return res.status(err.status).json({ error: `${err.message}` });
+};
+
+const notFoundHandler = async function (req, res, next) {
   var err = new Error(`route ${req.url} is not supported`);
   err.status = 404;
   next(err);
-});
+};
+
+// use bodyParser.text rather than bodyParser.json, for the sake of controling on req.body
+app.use(bodyParser.text({ type: '*/*' }));
+
+app.get('/', nineHanlder);
+app.use(notFoundHandler);
 app.use(errorHandler);
 
 app.listen(PORT, () => {
