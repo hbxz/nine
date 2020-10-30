@@ -108,3 +108,37 @@ describe('3. On recieving request with sample JSON', () => {
     request.expect(expectedBody).end(done);
   });
 });
+
+describe('4. On recieving valid JSON', () => {
+  var request;
+  var sampleRequest;
+
+  beforeEach(async () => {
+    sampleRequest = '"aaaaa"';
+    request = supertest(app)
+      .get('/')
+      .set('Accept', 'application/json')
+      .type('json')
+      .send(sampleRequest);
+  });
+
+  it('returns a JSON response, with HTTP status 200', (done) => {
+    request.expect('Content-Type', /json/).expect(200, done);
+  });
+
+  var kResponse = 'response';
+  var vResponse = {};
+  it(`the response JSON has a key ${kResponse}, the value is ${vResponse}`, (done) => {
+    request
+      .expect('Content-Type', /json/)
+      .expect((res) => {
+        if (!(kResponse in res.body))
+          throw new Error(`missing ${kResponse} key`);
+        if (!_.isObject(res.body[kResponse]))
+          throw new Error(`res.body[${kResponse}] is expected to be an object`);
+        if (!_.isEmpty(res.body[kResponse]))
+          throw new Error(`res.body[${kResponse}] is expected to be empty`);
+      })
+      .end(done);
+  });
+});
