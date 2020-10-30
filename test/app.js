@@ -17,8 +17,8 @@ describe('1. On receiving request with empty body', () => {
       .send({});
   });
 
-  it('returns a json response, with HTTP status 400.', (done) => {
-    request.expect('Content-Type', /json/).expect(400, done);
+  it('returns a json response, with HTTP status 200.', (done) => {
+    request.expect('Content-Type', /json/).expect(200, done);
   });
 
   var kResponse = 'response';

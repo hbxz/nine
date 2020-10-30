@@ -13,7 +13,7 @@ app.get('/', (req, res, next) => {
     const { payload } = req.body;
 
     if (_.isEmpty(payload) || !_.isArray(payload))
-      return res.status(400).json({
+      return res.status(200).json({
         response: ret,
         message: 'Expect request.body["payload"] to be an array.',
       });
